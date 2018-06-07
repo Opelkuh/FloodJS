@@ -53,40 +53,106 @@ function game(color) {
     toChange.forEach((i) => {
         tiles[i.x][i.y] = color;
     });
-    if(edges.length <= 0) {
-        edges.push({x:0, y:0});
+    if (edges.length <= 0) {
+        edges.push({
+            x: 0,
+            y: 0
+        });
     }
+    //Check if finished
+    var isUniform = true;
+    var func = () => {};
+    for (let x = 0; x < tiles.length; x++) {
+        for (let y = 0; y < tiles[x].length; y++) {
+            if (tiles[x][y] != color) {
+                isUniform = false;
+                break;
+            }
+        }
+        if (!isUniform) break;
+    }
+    if (isUniform) func = doEndGameAnimation;
+    //Queue animation
     edges.forEach((i) => {
-        doChangeAnimation(turns, toChange, i.x, i.y, color, () => console.log("Animation completed"));
+        doChangeAnimation(toChange, i.x, i.y, color, func);
     });
 }
 
 /**
+ * Does the end-game animation
+ */
+function doEndGameAnimation() {
+    var cycles = 10;
+    var delay = 2;
+
+    let original = tiles[0][0];
+    let x = Math.floor(tiles.length / 2);
+    let y = Math.floor(tiles.length / 2);
+    for (let i = 0; i < cycles; i++) {
+        waitFrames(i * delay, () => {
+            doSpread(x, y, colors[i % colors.length], []);
+        });
+    }
+    waitFrames(cycles * delay, () => {
+        doSpread(x, y, original, []);
+    });
+}
+
+/**
+ * Creeps from the selected position
+ * @param {Number} x 
+ * @param {Number} y 
+ * @param {String} color 
+ * @param {Object[]} blacklist 
+ */
+function doSpread(x, y, color, blacklist) {
+    findNeighbors(x, y, blacklist).forEach((i) => {
+        drawTile(i.x, i.y, color);
+        blacklist.push(i);
+        onFrame(() => {
+            doSpread(i.x, i.y, color, blacklist);
+        });
+    });
+
+}
+
+/**
+ * Calls the function after <frames> frames
+ * @param {Number} frames 
+ * @param {Function} cb 
+ */
+function waitFrames(frames, cb) {
+    if (frames <= 0) onFrame(cb);
+    else onFrame(() => waitFrames(--frames, cb));
+}
+
+/**
  * Creates the animation on tile change
- * @param {Number} turn 
  * @param {Object[]} toChange 
  * @param {Number} x 
  * @param {Number} y 
  * @param {String} color 
  * @param {Function} cb call after the animation ends 
  */
-function doChangeAnimation(turn, toChange, x, y, color, cb) {
-    if(toChange.length > 0) {
-        if(toChange[0].finished) return;
+function doChangeAnimation(toChange, x, y, color, cb) {
+    if (toChange.length > 0) {
+        if (toChange[0].finished) return;
     }
     findNeighbors(x, y, toChange, true).forEach((i) => {
-        drawTile(i.x,i.y,color);
+        drawTile(i.x, i.y, color);
         toChange.forEach((z, key) => {
-            if(z.x == i.x && z.y == i.y) toChange.splice(key, 1);
-        })
-        nextFrame.push(() => {
-            doChangeAnimation(turn, toChange, i.x, i.y, color, cb);
+            if (z.x == i.x && z.y == i.y) toChange.splice(key, 1);
+        });
+        onFrame(() => {
+            doChangeAnimation(toChange, i.x, i.y, color, cb);
         });
     });
-    if(toChange.length == 0) {
+    if (toChange.length == 0) {
         console.log(toChange);
         cb.call(null);
-        toChange.push({finished:true});
+        toChange.push({
+            finished: true
+        });
     }
 }
 
@@ -195,4 +261,4 @@ function getTile(x, y) {
     return tiles[x][y];
 }
 
-renderTiles();
+renderFrame();

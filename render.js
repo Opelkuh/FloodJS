@@ -1,6 +1,7 @@
 var nextFrame = [];
 var nextFrameTime = Date.now();
 var targetFramerate = 1000/50;
+var isFresh = false;
 
 /**
  * Renders a single tile
@@ -37,12 +38,32 @@ function renderFrame() {
             if(!b.turn) return 1;
             return a.turn - b.turn;
         });
-        thisFrame.slice(0).forEach((i) => {
-            i.call(null);
-        });
+        if(thisFrame.length <= 0) {
+            if(!isFresh) {
+                console.log("Fresh");
+                renderTiles();
+                isFresh = true;
+            }
+        }
+        else {
+            isFresh = false;
+            thisFrame.forEach((i) => {
+                if(!i.cb) {
+                    console.warn("Invalid nextFrame function! Add function using 'onFrame'!!");
+                    return;
+                }
+                i.cb.call(null);
+            });
+        }
     }
     
     window.requestAnimationFrame(renderFrame);
 }
 
-renderFrame();
+/**
+ * Adds the function to the stack for next frame
+ * @param {Function} cb 
+ */
+function onFrame(cb) {
+    nextFrame.push({cb:cb, turn: turns});
+}
