@@ -67,3 +67,13 @@ function renderFrame() {
 function onFrame(cb) {
     nextFrame.push({cb:cb, turn: turns});
 }
+
+/**
+ * Calls the function after <frames> frames
+ * @param {Number} frames 
+ * @param {Function} cb 
+ */
+function waitFrames(frames, cb) {
+    if (frames <= 0) onFrame(cb);
+    else onFrame(() => waitFrames(--frames, cb));
+}
