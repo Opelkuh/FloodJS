@@ -1,35 +1,56 @@
 <html>
-    <head>
-        <script src="   js/materialize.min.js"></script>
-        <link rel="stylesheet" href="css/materialize.min.css">
-    </head>
-    <body>
-        <nav class="row">
-            <div class="nav-wrapper">
-                <a href="#" class="brand-logo">Flood-it</a>
-            </div>
-        </nav>
-        <div class="container center-align">
-            <div class="row">
-                <canvas id="game" style="border:1px solid #000000;"></canvas>
-            </div>
-            <div class="row">
-                <h4 id="turnIndicator">0/25</h4>
-            </div>
-            <div class="row">
-                <button class="btn" onclick="newGame()">Reset</button>
-            </div>
-            <div class="row">
-                <label>
-                    <input type="checkbox" onclick="showHints = !showHints; if(!displayHints()) renderTiles()"/>
-                    <span>Hints</span>
-                </label>
-            </div>
+
+<head>
+    <title>FloodJS</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="js/materialize.min.js"></script>
+    <link rel="stylesheet" href="css/materialize.min.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Weather PWA">
+    <link rel="apple-touch-icon" href="img/icon-152x152.png">
+    <meta name="msapplication-TileImage" content="img/icon-144x144.png">
+    <meta name="msapplication-TileColor" content="#F44336">
+    <meta name="theme-color" content="#F44336"/>
+</head>
+
+<body>
+    <nav class="row">
+        <div class="nav-wrapper">
+            <a href="#" class="brand-logo">FloodJS</a>
         </div>
-        <script src="js/render.js"></script>
-        <script src="js/animations.js"></script>
-        <script src="js/ai.js"></script>
-        <script src="js/ui.js"></script>
-        <script src="js/game.js"></script>
-    </body>
+    </nav>
+    <div class="container center-align">
+        <div class="row">
+            <canvas id="game" style="border:1px solid #000000;"></canvas>
+        </div>
+        <div class="row">
+            <h4 id="turnIndicator">0/25</h4>
+        </div>
+        <div class="row">
+            <button class="btn" onclick="newGame()">Reset</button>
+        </div>
+        <div class="row">
+            <label>
+                <input type="checkbox" onclick="showHints = !showHints; if(!displayHints()) renderTiles()" />
+                <span>Hints</span>
+            </label>
+        </div>
+    </div>
+    <script src="js/render.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/ai.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/game.js"></script>
+    <script>
+        if('serviceWorker' in navigator) {
+  navigator.serviceWorker
+           .register('/sw.js')
+           .then(function() { console.log("Service Worker Registered"); });
+}
+    </script>
+</body>
 </html>

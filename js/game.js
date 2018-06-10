@@ -32,7 +32,7 @@ function newGame() {
 var c = document.getElementById("game");
 var ctx = c.getContext("2d");
 var size = 16;
-var tileSize = 15;
+var tileSize = 18;
 var hintSize = tileSize / 3;
 var colors = ["red", "blue", "yellow", "orange", "cyan", "green"]
 var tiles = [];
