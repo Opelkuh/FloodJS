@@ -10,23 +10,40 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
 
-
+/**
+ * Start a new game
+ */
+function newGame() {
+    turns = 0;
+    tiles = [];
+    for (let x = 0; x < size; x++) {
+        tiles.push([]);
+        for (let y = 0; y < size; y++) {
+            let colorId = getRandomInt(0, colors.length);
+            tiles[x][y] = colors[colorId];
+        }
+    }
+    maxTurns = findSolution(tiles).length + 1;
+    nextFrame = [];
+    updateTurnIndicator();
+    renderTiles();
+    displayHints();
+}
 var c = document.getElementById("game");
 var ctx = c.getContext("2d");
 var size = 16;
 var tileSize = 15;
+var hintSize = tileSize / 3;
 var colors = ["red", "blue", "yellow", "orange", "cyan", "green"]
 var tiles = [];
 var turns = 0;
+var maxTurns = 0;
+var showHints = false;
 
+c.width = tileSize * size;
+c.height = c.width;
 
-for (let x = 0; x < size; x++) {
-    tiles.push([]);
-    for (let y = 0; y < size; y++) {
-        let colorId = getRandomInt(0, colors.length);
-        tiles[x][y] = colors[colorId];
-    }
-}
+newGame();
 
 c.addEventListener('click', function (event) {
     let x = Math.floor((event.pageX - c.offsetLeft) / tileSize);
@@ -42,14 +59,14 @@ c.addEventListener('click', function (event) {
  * @param {String} color clicked target
  */
 function game(color) {
+    if (turns > maxTurns) return;
     if (tiles[0][0] == color) return;
-    var toChange = [{
-        x: 0,
-        y: 0
-    }];
+    var toChange = [];
     turns++;
+    updateTurnIndicator();
     var edges = [];
-    findChunk(0, 0, color, toChange, edges);
+    findChunk(tiles, 0, 0, toChange, edges);
+    //Change chunk color
     toChange.forEach((i) => {
         tiles[i.x][i.y] = color;
     });
@@ -71,57 +88,83 @@ function game(color) {
         }
         if (!isUniform) break;
     }
-    if (isUniform) func = doEndGameAnimation;
+    if (isUniform) {
+        func = doEndGameAnimation;
+    }
     //Queue animation
+    displayHints();
     edges.forEach((i) => {
-        doChangeAnimation(toChange, i.x, i.y, color, func);
+        if (i.color == color) {
+            doChangeAnimation(toChange, i.x, i.y, color, func);
+        }
     });
+    if (turns > maxTurns) {
+        announceLoss();
+    }
+}
+
+/**
+ * Shows hints for this round
+ * @returns {Boolean} whether the hints were drawn or not
+ */
+function displayHints() {
+    if (!showHints) return false;
+    let edges = [];
+    findChunk(tiles, 0, 0, [], edges);
+    let color = findNext(tiles);
+    let toChange = edges.filter(i => i.color == color);
+    toChange.forEach((item) => {
+        drawHint(item.x, item.y);
+    });
+    return true;
 }
 
 /**
  * Finds the solved color chunk from 0,0
+ * @param {String[][]} tiles
  * @param {Number} x 
  * @param {Number} y 
- * @param {String} targetColor 
  * @param {Object[]} out 
  * @param {Object[]} edgeOut
  */
-function findChunk(x, y, targetColor, out, edgeOut) {
+function findChunk(tiles, x, y, out, edgeOut, color = null) {
+    if (out.length == 0) {
+        out.push({
+            x: x,
+            y: y
+        });
+    }
+    if (color == null) color = tiles[x][y];
     //Input check
-    if (!tileExists(x, y)) return;
+    if (!tileExists(tiles, x, y)) return;
     //Color check
-    let color = tiles[x][y];
-    findNeighbors(x, y, out).forEach((tile) => {
-        switch (tile.color) {
-            case color:
-                out.push({
-                    x: tile.x,
-                    y: tile.y
-                });
-                findChunk(tile.x, tile.y, targetColor, out, edgeOut);
-                break;
-            case targetColor:
-                edgeOut.push({
-                    x: tile.x,
-                    y: tile.y
-                });
-                return;
-                break;
-            default:
-                return;
+    findNeighbors(tiles, x, y, out).forEach((tile) => {
+        if (tile.color == color) {
+            out.push({
+                x: tile.x,
+                y: tile.y
+            });
+            findChunk(tiles, tile.x, tile.y, out, edgeOut, color);
+        } else {
+            let exists = false;
+            edgeOut.forEach((i) => {
+                if (i.x == tile.x && i.y == tile.y) exists = true;
+            });
+            if (!exists) edgeOut.push(tile);
         }
     });
 }
 
 /**
  * Gets all the existing neighbors of the tile
+ * @param {String[][]} tiles
  * @param {Number} x 
  * @param {Number} y 
  * @param {Object[]} [list=[]]
  * @param {Boolean} [isWhitelist=false] whether the list is a whitelist (true) or ignorelist (false)
  * @returns {Object[]}
  */
-function findNeighbors(x, y, list = [], isWhitelist = false) {
+function findNeighbors(tiles, x, y, list = [], isWhitelist = false) {
     let ret = [];
     let targets = [{
         x: x + 1,
@@ -147,7 +190,7 @@ function findNeighbors(x, y, list = [], isWhitelist = false) {
         if (isWhitelist) exists = !exists;
         if (exists) return;
         //Get tile color
-        let tile = getTile(tileX, tileY);
+        let tile = getTile(tiles, tileX, tileY);
         if (!tile) return;
         ret.push({
             x: tileX,
@@ -160,11 +203,12 @@ function findNeighbors(x, y, list = [], isWhitelist = false) {
 
 /**
  * Checks whether the tile exists
+ * @param {String[][]} tiles
  * @param {Number} x 
  * @param {Number} y
  * @returns {Boolean} 
  */
-function tileExists(x, y) {
+function tileExists(tiles, x, y) {
     if (x < 0) return false;
     if (y < 0) return false;
     if (tiles.length <= x) return false;
@@ -174,12 +218,13 @@ function tileExists(x, y) {
 
 /**
  * Gets color of the tile
+ * @param {String[][]} tiles
  * @param {Number} x 
  * @param {Number} y
  * @returns {String} color of the tile
  */
-function getTile(x, y) {
-    if (!tileExists(x, y)) return;
+function getTile(tiles, x, y) {
+    if (!tileExists(tiles, x, y)) return;
     return tiles[x][y];
 }
 

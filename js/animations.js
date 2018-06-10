@@ -15,6 +15,7 @@ function doEndGameAnimation() {
     }
     waitFrames(cycles * delay, () => {
         doSpread(x, y, original, []);
+        announceWin();
     });
 }
 
@@ -26,7 +27,7 @@ function doEndGameAnimation() {
  * @param {Object[]} blacklist 
  */
 function doSpread(x, y, color, blacklist) {
-    findNeighbors(x, y, blacklist).forEach((i) => {
+    findNeighbors(tiles, x, y, blacklist).forEach((i) => {
         drawTile(i.x, i.y, color);
         blacklist.push(i);
         onFrame(() => {
@@ -48,7 +49,8 @@ function doChangeAnimation(toChange, x, y, color, cb) {
     if (toChange.length > 0) {
         if (toChange[0].finished) return;
     }
-    findNeighbors(x, y, toChange, true).forEach((i) => {
+    drawTile(x, y, color);
+    findNeighbors(tiles, x, y, toChange, true).forEach((i) => {
         drawTile(i.x, i.y, color);
         toChange.forEach((z, key) => {
             if (z.x == i.x && z.y == i.y) toChange.splice(key, 1);
@@ -58,7 +60,6 @@ function doChangeAnimation(toChange, x, y, color, cb) {
         });
     });
     if (toChange.length == 0) {
-        console.log(toChange);
         cb.call(null);
         toChange.push({
             finished: true
