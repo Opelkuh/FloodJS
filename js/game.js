@@ -23,7 +23,7 @@ function newGame() {
             tiles[x][y] = colors[colorId];
         }
     }
-    maxTurns = findSolution(tiles).length + 1;
+    maxTurns = findSolution(tiles).length + 2;
     nextFrame = [];
     updateTurnIndicator();
     renderTiles();
@@ -59,7 +59,7 @@ c.addEventListener('click', function (event) {
  * @param {String} color clicked target
  */
 function game(color) {
-    if (turns > maxTurns) return;
+    if (turns >= maxTurns) return;
     if (tiles[0][0] == color) return;
     var toChange = [];
     turns++;
@@ -98,7 +98,7 @@ function game(color) {
             doChangeAnimation(toChange, i.x, i.y, color, func);
         }
     });
-    if (turns > maxTurns) {
+    if (!isUniform && turns >= maxTurns) {
         announceLoss();
     }
 }
