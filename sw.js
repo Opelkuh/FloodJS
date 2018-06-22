@@ -1,3 +1,4 @@
+// MODIFIED
 // Copyright 2016 Google Inc.
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +26,7 @@ var filesToCache = [
   '/js/materialize.min.js',
   '/css/mod.css',
   '/css/materialize.min.css',
+  '/img/github-logo.png',
   '/manifest.json'
 ];
 
@@ -50,16 +52,6 @@ self.addEventListener('activate', function (e) {
       }));
     })
   );
-  /*
-   * Fixes a corner case in which the app wasn't returning the latest data.
-   * You can reproduce the corner case by commenting out the line below and
-   * then doing the following steps: 1) load app for first time so that the
-   * initial New York City data is shown 2) press the refresh button on the
-   * app 3) go offline 4) reload the app. You expect to see the newer NYC
-   * data, but you actually see the initial data. This happens because the
-   * service worker is not yet activated. The code below essentially lets
-   * you activate the service worker faster.
-   */
   return self.clients.claim();
 });
 
