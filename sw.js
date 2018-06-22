@@ -23,6 +23,7 @@ var filesToCache = [
   '/js/render.js',
   '/js/game.js',
   '/js/materialize.min.js',
+  '/css/mod.css',
   '/css/materialize.min.css',
   '/manifest.json'
 ];

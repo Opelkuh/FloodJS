@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="js/materialize.min.js"></script>
     <link rel="stylesheet" href="css/materialize.min.css">
+    <link rel="stylesheet" href="css/mod.css">
     <link rel="manifest" href="/manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -14,7 +15,7 @@
     <link rel="apple-touch-icon" href="img/icon-152x152.png">
     <meta name="msapplication-TileImage" content="img/icon-144x144.png">
     <meta name="msapplication-TileColor" content="#F44336">
-    <meta name="theme-color" content="#F44336"/>
+    <meta name="theme-color" content="#F44336" />
 </head>
 
 <body>
@@ -46,11 +47,13 @@
     <script src="js/ui.js"></script>
     <script src="js/game.js"></script>
     <script>
-        if('serviceWorker' in navigator) {
-  navigator.serviceWorker
-           .register('/sw.js')
-           .then(function() { console.log("Service Worker Registered"); });
-}
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker
+                .register('/sw.js')
+                .then(function () {
+                    console.log("Service Worker Registered");
+                });
+        }
     </script>
 </body>
 </html>
