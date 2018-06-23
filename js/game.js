@@ -1,17 +1,20 @@
+var EXTRA_TURNS = 2;
+var MAX_UNDO = 2;
+
 /**
- * The maximum is exclusive and the minimum is inclusive
- * @param {Number} min 
- * @param {Number} max
+ * Generates a random number between two values
+ * @param {Number} min INCLUSIVE minimal value
+ * @param {Number} max EXCLUSIVE maximal value
  * @returns {Number} 
  */
 function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+    return Math.floor(Math.random() * (max - min)) + min;
 }
 
 /**
- * Start a new game
+ * Starts a new game
  */
 function newGame() {
     turns = 0;
@@ -23,36 +26,13 @@ function newGame() {
             tiles[x][y] = colors[colorId];
         }
     }
-    maxTurns = findSolution(tiles).length + 2;
+    maxTurns = findSolution(tiles).length + EXTRA_TURNS;
     nextFrame = [];
+    canUndo = true;
     updateTurnIndicator();
     renderTiles();
     displayHints();
 }
-var c = document.getElementById("game");
-var ctx = c.getContext("2d");
-var size = 16;
-var tileSize = 18;
-var hintSize = tileSize / 3;
-var colors = ["red", "blue", "yellow", "orange", "cyan", "green"]
-var tiles = [];
-var turns = 0;
-var maxTurns = 0;
-var showHints = false;
-
-c.width = tileSize * size;
-c.height = c.width;
-
-newGame();
-
-c.addEventListener('click', function (event) {
-    let x = Math.floor((event.pageX - c.offsetLeft) / tileSize);
-    let y = Math.floor((event.pageY - c.offsetTop) / tileSize);
-    //Find clicked
-    if (x >= tiles.length) return;
-    if (y >= tiles[x].length) return;
-    game(tiles[x][y]);
-}, false);
 
 /**
  * Does game logic
@@ -61,6 +41,7 @@ c.addEventListener('click', function (event) {
 function game(color) {
     if (turns >= maxTurns) return;
     if (tiles[0][0] == color) return;
+    saveTurn();
     var toChange = [];
     turns++;
     updateTurnIndicator();
@@ -89,6 +70,7 @@ function game(color) {
         if (!isUniform) break;
     }
     if (isUniform) {
+        canUndo = false;
         func = doEndGameAnimation;
     }
     //Queue animation
@@ -99,8 +81,26 @@ function game(color) {
         }
     });
     if (!isUniform && turns >= maxTurns) {
+        canUndo = false;
         announceLoss();
     }
+}
+
+function saveTurn() {
+    tileHistory.push(JSON.parse(JSON.stringify(tiles)));
+    if(tileHistory.length > MAX_UNDO) {
+        tileHistory.shift();
+    }
+}
+
+function undo() {
+    if(!canUndo) return;
+    let change = tileHistory.pop();
+    if(!change) return;
+    turns--;
+    tiles = change;
+    renderTiles();
+    updateTurnIndicator();
 }
 
 /**
@@ -228,4 +228,29 @@ function getTile(tiles, x, y) {
     return tiles[x][y];
 }
 
+var c = document.getElementById("game");
+var ctx = c.getContext("2d");
+var size = 16;
+var tileSize = 18;
+var hintSize = tileSize / 3;
+var colors = ["red", "blue", "yellow", "orange", "cyan", "green"]
+var tiles = [];
+var tileHistory = [];
+var turns = 0;
+var maxTurns = 0;
+var showHints = false;
+var canUndo = true;
+
+c.width = tileSize * size;
+c.height = c.width;
+c.addEventListener('click', function (event) {
+    let x = Math.floor((event.pageX - c.offsetLeft) / tileSize);
+    let y = Math.floor((event.pageY - c.offsetTop) / tileSize);
+    //Find clicked
+    if (x >= tiles.length) return;
+    if (y >= tiles[x].length) return;
+    game(tiles[x][y]);
+}, false);
+
+newGame();
 renderFrame();
