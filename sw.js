@@ -16,18 +16,17 @@
 var dataCacheName = 'flooditPWACache';
 var cacheName = 'flooditPWA';
 var filesToCache = [
-  '/',
-  '/index.html',
-  '/js/ai.js',
-  '/js/ui.js',
-  '/js/animations.js',
-  '/js/render.js',
-  '/js/game.js',
-  '/js/materialize.min.js',
-  '/css/mod.css',
-  '/css/materialize.min.css',
-  '/img/github-logo.png',
-  '/manifest.json'
+  'index.html',
+  'js/ai.js',
+  'js/ui.js',
+  'js/animations.js',
+  'js/render.js',
+  'js/game.js',
+  'js/materialize.min.js',
+  'css/mod.css',
+  'css/materialize.min.css',
+  'img/github-logo.png',
+  'manifest.json'
 ];
 
 self.addEventListener('install', function (e) {
